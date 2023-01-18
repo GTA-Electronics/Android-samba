@@ -51,6 +51,7 @@ def SAMBA_CHECK_PERL(conf, mandatory=True, version=(5,0,0)):
     perl_inc = read_perl_config_var('print "@INC"')
     if '.' in perl_inc:
         perl_inc.remove('.')
+
     conf.start_msg("PERL_INC: ")
     conf.end_msg("%s" % (perl_inc), 'GREEN')
     conf.env.PERL_INC = perl_inc
