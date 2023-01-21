@@ -37,3 +37,7 @@ getcwd takes a NULL argument: OK
 Checking for HAVE_IFACE_IFCONF: FAIL
 Checking whether we can use Linux thread-specific credentials: FAIL
 Checking whether fcntl lock supports open file description locks: FAIL
+Checking if can we convert from CP850 to UCS-2LE: OK
+Checking if can we convert from IBM850 to UCS-2LE: OK
+Checking if can we convert from UTF-8 to UCS-2LE: OK
+Checking if can we convert from UTF8 to UCS-2LE: OK
