@@ -1,9 +1,25 @@
 #!/bin/bash
 CWD=$(pwd)
 
-if [ ! -d $NDK_PATH_r17c ]; then
+pr_help()
+{
+    echo "Required parameters:"
+    echo ""
+    echo "    --arch=<arm|arm64|x86|x86_64>"
+    echo "    --api=<14..28>"
+    echo ""
+    exit 1
+}
+
+if [ -z $NDK_PATH_r17c ]; then
     echo "Path for NDK version r17c was not found."
     echo "Please define NDK_PATH_r17c variable"
+    echo ""
+    exit 1
+fi
+
+if [ ! -f $NDK_PATH_r17c/build/tools/make_standalone_toolchain.py ]; then
+    echo "You have wrong version of NDK, please check downloaded NDK"
     echo ""
     exit 1
 fi
@@ -12,34 +28,58 @@ NDK=$NDK_PATH_r17c
 
 HOST=linux-x86_64
 
-ANDROID_VER=28
 TOOLCHAIN_VER=4.9
 
 TOOLCHAIN=$CWD/bin/ndk/toolchain
 
+for opt do
+    optval="${opt#*=}"
+    case "${opt%=*}" in
+    --arch)
+        PLATFORM_ARCH="${optval}"
+        ;;
+    --api)
+        ANDROID_VER="${optval}"
+        ;;
+    *)
+        pr_help
+        ;;
+    esac
+done
+
+if [ -z $PLATFORM_ARCH ] || [ -z $ANDROID_VER ]; then
+    pr_help
+fi
+
 # Flags for 32-bit ARM
-ABI=arm-linux-androideabi
-PLATFORM_ARCH=arm
-TRIPLE=arm-linux-androideabi
+if [ "$PLATFORM_ARCH" = "arm" ]; then
+    ABI=arm-linux-androideabi
+    TRIPLE=arm-linux-androideabi
 
-# Flags for ARM v7 used with flags for 32-bit ARM to compile for ARMv7
-COMPILER_FLAG="-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16"
-LINKER_FLAG="-march=armv7-a -Wl,--fix-cortex-a8"
+    # Flags for ARM v7 used with flags for 32-bit ARM to compile for ARMv7
+    COMPILER_FLAG="-march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16"
+    LINKER_FLAG="-march=armv7-a -Wl,--fix-cortex-a8"
+elif [ "$PLATFORM_ARCH" = "arm64" ]; then
+    ABI=aarch64-linux-android
+    TRIPLE=aarch64-linux-android
+elif [ "$PLATFORM_ARCH" = "x86" ]; then
+    ABI=x86
+    TRIPLE=i686-linux-android
+elif [ "$PLATFORM_ARCH" = "x86_64" ]; then
+    ABI=x86_64
+    TRIPLE=x86_64-linux-android
+else
+    pr_help
+fi
 
-# Flags for 64-bit ARM v8
-#ABI=aarch64-linux-android
-#PLATFORM_ARCH=arm64
-#TRIPLE=aarch64-linux-android
-
-# Flags for x86
-#ABI=x86
-#PLATFORM_ARCH=x86
-#TRIPLE=i686-linux-android
-
-# Flags for x86_64
-#ABI=x86_64
-#PLATFORM_ARCH=x86_64
-#TRIPLE=x86_64-linux-android
+if [ ! -d $NDK/platforms/android-$ANDROID_VER/arch-$PLATFORM_ARCH ]; then
+    echo "Platform you selected is not supported by NDK."
+    echo ""
+    echo "Android version: $ANDROID_VER"
+    echo "Architecture:    $PLATFORM_ARCH"
+    echo ""
+    exit 1
+fi
 
 export CC="$CWD/cc_shim.py $TOOLCHAIN/bin/clang"
 export AR=$TOOLCHAIN/$TRIPLE-ar
