@@ -25,18 +25,18 @@ for opt do
     esac
 done
 
-if [ $BUILD_CLIENT -eq 1 ] && [ $BUILD_SERVER -eq 1 ]: then
+if [ $BUILD_CLIENT -eq 1 ] && [ $BUILD_SERVER -eq 1 ]; then
     echo "You cann't build server and client at same time !"
     echo ""
     exit 1
-elif [ $BUILD_CLIENT -ne 1 ] && [ $BUILD_SERVER -ne 1 ]: then
+elif [ $BUILD_CLIENT -ne 1 ] && [ $BUILD_SERVER -ne 1 ]; then
     pr_help
 fi
 
-if [ $BUILD_SERVER -eq 1 ]; then
-    WAF_MAKE=1 python $CWD/buildtools/bin/waf build --targets=smbclient $*
+if [ $BUILD_CLIENT -eq 1 ]; then
+    WAF_MAKE=1 python $CWD/buildtools/bin/waf build --targets=smbclient
 else
-    WAF_MAKE=1 python $CWD/buildtools/bin/waf build --targets=nmbd/nmbd,smbd/smbd,smbpasswd $*
+    WAF_MAKE=1 python $CWD/buildtools/bin/waf build --targets=nmbd/nmbd,smbd/smbd,smbpasswd
 
     rm -rf out
     mkdir -p out/samba/lib
